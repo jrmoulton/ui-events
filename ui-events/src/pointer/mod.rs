@@ -370,4 +370,34 @@ impl PointerEvent {
             | Self::Gesture(PointerGestureEvent { pointer, .. }) => pointer.is_primary_pointer(),
         }
     }
+
+    /// Returns the logical point for the pointer events that contain a `Point`.
+    pub fn logical_point(&self) -> Option<kurbo::Point> {
+        match self {
+            Self::Down(pointer_button_event) | Self::Up(pointer_button_event) => {
+                Some(pointer_button_event.state.logical_point())
+            }
+            Self::Move(pointer_update) => Some(pointer_update.current.logical_point()),
+            Self::Scroll(pointer_scroll_event) => Some(pointer_scroll_event.state.logical_point()),
+            Self::Gesture(pointer_gesture_event) => {
+                Some(pointer_gesture_event.state.logical_point())
+            }
+            Self::Cancel(_) | Self::Enter(_) | Self::Leave(_) => None,
+        }
+    }
+
+    /// Returns the `PointerInfo` contained in each event kind.
+    pub fn pointer_info(&self) -> PointerInfo {
+        match self {
+            Self::Down(pointer_button_event) | Self::Up(pointer_button_event) => {
+                pointer_button_event.pointer
+            }
+            Self::Move(pointer_update) => pointer_update.pointer,
+            Self::Scroll(pointer_scroll_event) => pointer_scroll_event.pointer,
+            Self::Gesture(pointer_gesture_event) => pointer_gesture_event.pointer,
+            Self::Cancel(pointer_info) | Self::Enter(pointer_info) | Self::Leave(pointer_info) => {
+                *pointer_info
+            }
+        }
+    }
 }
